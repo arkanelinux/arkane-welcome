@@ -1,8 +1,12 @@
 .welcome-text {
-    font-weight: bold;
-    padding: 25px 0 15px 0;
+	font-weight: bold;
+	margin: 25px 0 15px 0;
 }
 
 .logo-image {
-    padding-top: 25px;
+	margin-top: 25px;
+}
+
+.install-flatpaks {
+	margin-top: 25px;
 }

@@ -1,21 +1,36 @@
 #!/usr/bin/env python3
-
+import os.path
 import sys
 import gi
 gi.require_version('Gtk', '4.0')
 gi.require_version('Adw', '1')
 from gi.repository import Gtk, Adw, Gdk
+from pathlib import Path
 
 css_provider = Gtk.CssProvider()
 css_provider.load_from_path('main.css')
 Gtk.StyleContext.add_provider_for_display(Gdk.Display.get_default(), css_provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+
+
+# Prevent app from autostarting again
+lockfile_path: str = str(Path.home()) + '/.config/.arkane-welcome.lock'
+
+# TODO: Right now is hard coded to .config, if none-default config dir is used will break
+# TODO: Instead use xdg_base_dirs? I opted not to, as to avoid another dependency for this minor feature
+if not os.path.isfile(lockfile_path):
+    try:
+        lockfile = open(lockfile_path, 'x')
+    except:
+        sys.stderr.write('Failed to create lockfile\n')
+else:
+    sys.stderr.write('Lockfile already exists\n')
+
 
 class MainWindow(Gtk.ApplicationWindow):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         # TODO: Open window centered on screen
-        # TODO: Create .lock file so app does not start twice
         # TODO: Decide if app should install Flatpaks or if separate background service should
         # TODO: Ctrl + Q close shortcut
 
@@ -52,7 +67,7 @@ class MainWindow(Gtk.ApplicationWindow):
 
         # Define Flatpak install button
         self.flatpak_button = Gtk.Button(label="Install")
-
+        self.flatpak_button.set_css_classes(['install-flatpaks'])
 
         # Assemble content
         self.content_box.append(self.logo)
@@ -61,6 +76,7 @@ class MainWindow(Gtk.ApplicationWindow):
         self.content_box.append(self.button_centerbox)
         self.button_centerbox.set_center_widget(self.flatpak_button)
 
+
 class MyApp(Adw.Application):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -68,7 +84,7 @@ class MyApp(Adw.Application):
 
     def on_activate(self, app):
         self.win = MainWindow(application=app)
-        self.win.set_default_size(768, 500)
+        self.win.set_default_size(600, 375)
         self.win.present()
 
 app = MyApp(application_id="com.example.GtkApplication")
